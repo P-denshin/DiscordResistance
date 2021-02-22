@@ -26,18 +26,13 @@ namespace Resistance {
         public int NumberRequiredForFailer { get; private set; }
 
         /// <summary>
-        /// ミッションの参加人数と失敗するために必要な失敗カードの枚数を取得します。
+        /// MissionNumberを生成します。
         /// </summary>
-        /// <param name="playersCount">ゲームの参加人数</param>
-        /// <param name="round">現在のラウンド</param>
-        /// <returns>ミッションの参加人数と失敗するために必要な失敗カードの枚数</returns>
-        static public MissionNumber GetMission(int playersCount, int round) {
-            return new MissionNumber(number[round, playersCount - 5], (round == 4 && playersCount >= 7) ? 2 : 1);
-        }
-
-        private MissionNumber(int numberOfMembers, int numberReqForFailer) {
-            this.NumberOfMembers = numberOfMembers;
-            this.NumberRequiredForFailer = numberReqForFailer;
+        /// <param name="playersCount">プレイヤー人数</param>
+        /// <param name="round">現在のラウンド数</param>
+        private MissionNumber(int playersCount, int round) {
+            this.NumberOfMembers = number[round, playersCount - 5];
+            this.NumberRequiredForFailer = (round == 4 && playersCount >= 7) ? 2 : 1;
         }
     }
 }
