@@ -27,6 +27,10 @@ namespace Resistance {
             await Task.Delay(Timeout.Infinite);
         }
 
+        /// <summary>
+        /// DiscordのTokenを取得する
+        /// </summary>
+        /// <returns>Token</returns>
         private string getToken() {
             ResourceManager resource = Properties.Resources.ResourceManager;
             var tokenPath = resource.GetString("TokenPath");
