@@ -7,13 +7,18 @@ namespace Resistance {
     public delegate void UserMessageDelegate(SocketMessage message);
 
     public class DiscordUser {
-        private SocketUser socketUser;
+        /// <summary>
+        /// SocketUserを取得します。
+        /// </summary>
+        public SocketUser SocketUser {
+            get; private set;
+        }
 
         /// <summary>
         /// ユーザの名前を取得する。
         /// </summary>
         public String Name {
-            get { return socketUser.Username; }
+            get { return SocketUser.Username; }
         }
         
         /// <summary>
@@ -24,11 +29,11 @@ namespace Resistance {
         public DiscordUser(SocketUser socketUser) {
             OnGetMessage += (e) => { };
             DiscordManager.OnReceiveMessage += onRead;
-            this.socketUser = socketUser;
+            this.SocketUser = socketUser;
         }
 
         private void onRead(SocketMessage message) {
-            if(message.Author.Id == socketUser.Id) {
+            if(message.Author.Id == SocketUser.Id) {
                 OnGetMessage(message);
             }
         }

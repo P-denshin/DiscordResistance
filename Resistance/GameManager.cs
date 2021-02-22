@@ -10,7 +10,7 @@ namespace Resistance {
     /// Resistanceのゲームを統括するクラス
     /// </summary>
     public class GameManager {
-        List<DiscordUser> discordUsers;
+        List<Player> players;
 
         /// <summary>
         /// ゲームボード
@@ -26,13 +26,8 @@ namespace Resistance {
         /// ゲームを開始する。
         /// </summary>
         /// <param name="discordUsers">参加ユーザのリスト</param>
-        public async void GameStart(List<DiscordUser> discordUsers, ISocketMessageChannel channel) {
-            IsGaming = true;
-            this.discordUsers = discordUsers;
-
-            var boardEmbed = buildBoard();
-
-            this.board = await channel.SendMessageAsync(embed: boardEmbed);
+        public void GameStart(List<DiscordUser> discordUsers, ISocketMessageChannel channel) {
+            initGame(discordUsers, channel);
         }
 
         /// <summary>
@@ -40,7 +35,24 @@ namespace Resistance {
         /// </summary>
         public void GameExit() {
             IsGaming = false;
-            discordUsers.Clear();
+            players.Clear();
+        }
+
+        /// <summary>
+        /// ゲーム開始時の初期化を行う。
+        /// </summary>
+        private async void initGame(List<DiscordUser> discordUsers, ISocketMessageChannel channel) {
+            IsGaming = true;
+
+            players = new List<Player>();
+            foreach (var i in discordUsers) {
+                players.Add(new Player(i.SocketUser, Role.Spy));
+            }
+
+            var boardEmbed = buildBoard();
+
+            this.board = await channel.SendMessageAsync(embed: boardEmbed);
+
         }
 
         /// <summary>
@@ -52,9 +64,9 @@ namespace Resistance {
             eb = eb.WithTitle("ボード");
 
             // ユーザリスト
-            EmbedFieldBuilder[] efb = new EmbedFieldBuilder[discordUsers.Count];
+            EmbedFieldBuilder[] efb = new EmbedFieldBuilder[players.Count];
             int count = 0;
-            foreach (var user in discordUsers) {
+            foreach (var user in players) {
                 efb[count] = new EmbedFieldBuilder();
                 efb[count] = efb[count].WithIsInline(true);
                 efb[count].Name = user.Name;
