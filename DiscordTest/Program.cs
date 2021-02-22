@@ -1,8 +1,10 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using System;
+using System.Resources;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Resistance {
     class Program {
@@ -19,10 +21,21 @@ namespace Resistance {
         }
 
         public async Task MainAsync() {
-            await client.LoginAsync(TokenType.Bot, "ODEzMzA0MjkyMzI4NjAzNjk4.YDNWpQ.Wiuf6EaZj892IAQBe2WNbV0LCrU");
+            await client.LoginAsync(TokenType.Bot, getToken());
             await client.StartAsync();
 
             await Task.Delay(Timeout.Infinite);
+        }
+
+        private string getToken() {
+            ResourceManager resource = Properties.Resources.ResourceManager;
+            var tokenPath = resource.GetString("TokenPath");
+
+            StreamReader sr = new StreamReader(tokenPath);
+            var token = sr.ReadLine();
+            sr.Close();
+
+            return token;
         }
 
         private Task LogAsync(LogMessage log) {
