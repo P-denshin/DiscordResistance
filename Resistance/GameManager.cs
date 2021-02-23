@@ -42,7 +42,13 @@ namespace Resistance {
         /// ゲームを開始する。
         /// </summary>
         /// <param name="discordUsers">参加ユーザのリスト</param>
-        public void GameStart(List<DiscordUser> discordUsers, ISocketMessageChannel channel) {
+        public async void GameStart(List<DiscordUser> discordUsers, ISocketMessageChannel channel) {
+            if (discordUsers.Count < 5 || discordUsers.Count > 10) {
+                await channel.SendMessageAsync("人数は5人以上10人以下でプレイ可能です。");
+                return;
+            }
+            await channel.SendMessageAsync("ゲームを開始します！");
+
             this.channel = channel;
             initGame(discordUsers);
         }

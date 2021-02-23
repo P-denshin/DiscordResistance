@@ -78,7 +78,6 @@ namespace Resistance {
                     await message.Channel.SendMessageAsync(message.Author.Username + "が参加しました。");
                     return;
                 } else if (message.Content.Equals("!dr start")) {
-                    await message.Channel.SendMessageAsync("ゲームを開始します！");
                     GameManager.Instance.GameStart(players, message.Channel);
                     return;
                 }
