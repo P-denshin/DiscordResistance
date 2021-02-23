@@ -80,6 +80,12 @@ namespace Resistance {
                 } else if (message.Content.Equals("!dr start")) {
                     GameManager.Instance.GameStart(players, message.Channel);
                     return;
+                } else if(message.Content.Equals("!dr member")) {
+                    String member = "";
+                    foreach(var player in players) {
+                        member += "・" +  player.Name + "\n";
+                    }
+                    await message.Channel.SendMessageAsync("メンバー一覧\n" + member);
                 }
             }
 
