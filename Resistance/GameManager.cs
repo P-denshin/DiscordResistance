@@ -29,6 +29,11 @@ namespace Resistance {
         int round;
 
         /// <summary>
+        /// 現在のリーダー
+        /// </summary>
+        int leader;
+
+        /// <summary>
         /// 現在ゲーム中かどうかを取得する。
         /// </summary>
         public bool IsGaming { get; private set; }
@@ -56,6 +61,7 @@ namespace Resistance {
         private async void initGame(List<DiscordUser> discordUsers) {
             IsGaming = true;
             round = 0;
+            leader = 0;
 
             assignRoles(discordUsers);
             noticeRole();
@@ -122,8 +128,14 @@ namespace Resistance {
             foreach (var player in players) {
                 efb[count] = new EmbedFieldBuilder();
                 efb[count] = efb[count].WithIsInline(true);
-                efb[count].Name = player.Name;
-                efb[count].Value = "リーダー";
+                efb[count].Name = count + " : " + player.Name;
+                if (count == leader) {
+                    efb[count].Value = "【リーダー】";
+                } else {
+                    efb[count].Value = "レジスタンス・・・？";
+                }
+
+                count += 1;
             }
             eb = eb.WithFields(efb);
 
