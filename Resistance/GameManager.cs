@@ -162,6 +162,7 @@ namespace Resistance {
             this.board = await channel.SendMessageAsync(embed: eb.Build());
         }
 
+        #region assignRoles
 #if DEBUG
         private void assignRoles(List<DiscordUser> discordUsers) {
             players = new List<Player>();
@@ -199,6 +200,7 @@ namespace Resistance {
             players = players.OrderBy(a => Guid.NewGuid()).ToList();
         }
 #endif
+        #endregion
 
         /// <summary>
         /// 役割を通達する。
