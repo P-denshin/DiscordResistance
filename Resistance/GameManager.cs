@@ -28,11 +28,6 @@ namespace Resistance {
         RoundState[] roundStates = new RoundState[5];
 
         /// <summary>
-        /// 公開チャンネル
-        /// </summary>
-        ISocketMessageChannel channel;
-
-        /// <summary>
         /// 現在のラウンド
         /// </summary>
         int round;
@@ -63,8 +58,7 @@ namespace Resistance {
 
             await channel.SendMessageAsync("ゲームを開始します！");
 
-            this.channel = channel;
-            await initGame(discordUsers);
+            await initGame(discordUsers, channel);
 
             main();
         }
@@ -151,7 +145,7 @@ namespace Resistance {
         /// <summary>
         /// ゲーム開始時の初期化を行う。
         /// </summary>
-        private async Task initGame(List<DiscordUser> discordUsers) {
+        private async Task initGame(List<DiscordUser> discordUsers, ISocketMessageChannel channel) {
             IsGaming = true;
             round = 0;
             leaderIndex = 0;
