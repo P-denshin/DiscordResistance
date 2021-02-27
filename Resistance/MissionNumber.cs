@@ -31,8 +31,13 @@ namespace Resistance {
         /// <param name="playersCount">プレイヤー人数</param>
         /// <param name="round">現在のラウンド数</param>
         public MissionNumber(int playersCount, int round) {
+#if DEBUG
+            this.NumberOfMembers = 1;
+            this.NumberRequiredForFailer = 1;
+#else
             this.NumberOfMembers = number[round, playersCount - 5];
             this.NumberRequiredForFailer = (round == 4 && playersCount >= 7) ? 2 : 1;
+#endif
         }
     }
 }

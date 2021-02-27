@@ -43,10 +43,15 @@ namespace Resistance {
         /// </summary>
         /// <param name="discordUsers">参加ユーザのリスト</param>
         public async void GameStart(List<DiscordUser> discordUsers, ISocketMessageChannel channel) {
+#if DEBUG
+            await channel.SendMessageAsync("デバッグのため1人でもスタート可とします。");
+#else
             if (discordUsers.Count < 5 || discordUsers.Count > 10) {
                 await channel.SendMessageAsync("人数は5人以上10人以下でプレイ可能です。");
                 return;
             }
+#endif
+
             await channel.SendMessageAsync("ゲームを開始します！");
 
             this.channel = channel;
@@ -75,6 +80,22 @@ namespace Resistance {
             this.board = await channel.SendMessageAsync(embed: buildBoard());
         }
 
+#if DEBUG
+        private void assignRoles(List<DiscordUser> discordUsers) {
+            players = new List<Player>();
+
+            // デバッグの場合一人とする
+            for (var i = 0; i < discordUsers.Count; i++) {
+                DiscordUser discordUser = discordUsers[i];
+                if (i < 1) {
+                    players.Add(new Player(discordUser.SocketUser, Role.Spy));
+                } else {
+                    players.Add(new Player(discordUser.SocketUser, Role.Resistance));
+                }
+            }
+            players = players.OrderBy(a => Guid.NewGuid()).ToList();
+        }
+#else
         /// <summary>
         /// プレイヤーの役割決める
         /// </summary>
@@ -95,6 +116,7 @@ namespace Resistance {
 
             players = players.OrderBy(a => Guid.NewGuid()).ToList();
         }
+#endif
 
         /// <summary>
         /// 役割を通達する。
