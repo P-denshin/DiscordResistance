@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
@@ -11,12 +12,20 @@ namespace Resistance {
     /// Resistanceのゲームを統括するクラス
     /// </summary>
     public class GameManager {
+        /// <summary>
+        /// 参加プレイヤーリスト
+        /// </summary>
         List<Player> players;
 
         /// <summary>
         /// ゲームボード
         /// </summary>
         RestUserMessage board;
+
+        /// <summary>
+        /// 各ラウンドの結果
+        /// </summary>
+        RoundState[] roundStates = new RoundState[5];
 
         /// <summary>
         /// 公開チャンネル
@@ -55,7 +64,9 @@ namespace Resistance {
             await channel.SendMessageAsync("ゲームを開始します！");
 
             this.channel = channel;
-            initGame(discordUsers);
+            await initGame(discordUsers);
+
+            main();
         }
 
         /// <summary>
@@ -66,10 +77,81 @@ namespace Resistance {
             players.Clear();
         }
 
+        private async void main() {
+            while(round < 5) {
+                var leader = players[leaderIndex];
+                var members = await selectMember(leader);
+            }
+        }
+
+        /// <summary>
+        /// リーダーがメンバーを決める。
+        /// </summary>
+        private async Task<List<Player>> selectMember(Player leader) {
+            await this.board.ModifyAsync(e => e.Embed = buildBoard("現在、" + leader.Name + "がメンバーを選んでいます。")); ;
+
+            String playerList = "";
+            for(var i = 0; i < players.Count; i++) {
+                playerList += (i + 1) + ":" + players[i].Name + "\n";
+            }
+
+            var leaderDM = await leader.SocketUser.GetOrCreateDMChannelAsync();
+            var missionNum = new MissionNumber(players.Count, round);
+            while (true) {
+                await leaderDM.SendMessageAsync("プレイヤーを" + missionNum.NumberRequiredForFailer + "人選択して下さい。\nプレイヤーはスペース区切りで番号を指定してください。\n\nプレイヤーリスト\n" + playerList);
+
+                string playersListStr = MessageReceiver.ReceiveMessage(leader);
+
+                string[] numbers = playersListStr.Split(" ");
+                
+                if(numbers.Length != missionNum.NumberOfMembers) {
+                    await leaderDM.SendMessageAsync(missionNum.NumberOfMembers + "人指定してください。");
+                    continue;
+                }
+
+                bool isFormatError = false;
+
+                List<Player> result = new List<Player>();
+                foreach(var numStr in numbers) {
+                    int num;
+                    if(!int.TryParse(numStr, out num)) {
+                        isFormatError = true;
+                        break;
+                    }
+
+                    if(num < 1 || num > players.Count) {
+                        isFormatError = true;
+                        break;
+                    }
+
+                    result.Add(players[num - 1]);
+                }
+
+                if(isFormatError) {
+                    await leaderDM.SendMessageAsync("1から" + players.Count + "までの数字で選択してください。");
+                    continue;
+                }
+
+                string message = "本当につぎの人たちでいいですか？ y/n\n";
+                foreach(var mem in result) {
+                    message += "・" + mem.Name + "\n";
+                }
+                await leaderDM.SendMessageAsync(message);
+
+                var yorn = MessageReceiver.ReceiveMessage(leader);
+
+                if (!yorn.Equals("y")) {
+                    continue;
+                }
+
+                return result;
+            }
+        }
+
         /// <summary>
         /// ゲーム開始時の初期化を行う。
         /// </summary>
-        private async void initGame(List<DiscordUser> discordUsers) {
+        private async Task initGame(List<DiscordUser> discordUsers) {
             IsGaming = true;
             round = 0;
             leaderIndex = 0;
@@ -77,7 +159,13 @@ namespace Resistance {
             assignRoles(discordUsers);
             noticeRole();
 
-            this.board = await channel.SendMessageAsync(embed: buildBoard());
+            for(var i = 0; i < roundStates.Length; i++) {
+                roundStates[i] = RoundState.NotYet;
+            }
+
+            EmbedBuilder eb = new EmbedBuilder();
+            eb = eb.WithTitle("ボード");
+            this.board = await channel.SendMessageAsync(embed: eb.Build());
         }
 
 #if DEBUG
@@ -146,26 +234,43 @@ namespace Resistance {
         /// 現在の情報でEmbedを作成する。
         /// </summary>
         /// <returns></returns>
-        private Embed buildBoard() {
+        private Embed buildBoard(string message) {
             var eb = new EmbedBuilder();
             eb = eb.WithTitle("ボード");
 
-            // ユーザリスト
+            // ユーザリストと現状の役割
             EmbedFieldBuilder[] efb = new EmbedFieldBuilder[players.Count];
             int count = 0;
             foreach (var player in players) {
                 efb[count] = new EmbedFieldBuilder();
                 efb[count] = efb[count].WithIsInline(true);
-                efb[count].Name = count + " : " + player.Name;
+                efb[count].Name = (count + 1) + " : " + player.Name;
                 if (count == leaderIndex) {
                     efb[count].Value = "【リーダー】";
                 } else {
-                    efb[count].Value = "レジスタンス・・・？";
+                    efb[count].Value = "";
                 }
 
                 count += 1;
             }
             eb = eb.WithFields(efb);
+
+            var description = "";
+            for(var i = 0; i < roundStates.Length; i++) {
+                switch (roundStates[i]) {
+                    case RoundState.NotYet:
+                        description += "○";
+                        break;
+                    case RoundState.ResistanceWin:
+                        description += "🔵";
+                        break;
+                    case RoundState.SpyWin:
+                        description += "🔴";
+                        break;
+                }
+            }
+
+            eb = eb.WithDescription(message + "\n" + description);
 
             return eb.Build();
         }
@@ -174,7 +279,7 @@ namespace Resistance {
             IsGaming = false;
         }
 
-        #region Singleton
+#region Singleton
         static GameManager gameManager;
 
         /// <summary>
@@ -188,6 +293,6 @@ namespace Resistance {
                 return gameManager;
             }
         }
-        #endregion
+#endregion
     }
 }

@@ -14,6 +14,8 @@ namespace Resistance {
             while (receivedMessage == null)
                 ;
 
+            player.OnGetMessage -= receive;
+
             var res = new String(receivedMessage);
 
             return res;
