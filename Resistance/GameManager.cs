@@ -80,7 +80,9 @@ namespace Resistance {
         private async void main() {
             while(round < 5) {
                 var leader = players[leaderIndex];
+                await this.board.ModifyAsync(e => e.Embed = buildBoard("現在、" + leader.Name + "がメンバーを選んでいます。"));
                 var members = await selectMember(leader);
+                await this.board.ModifyAsync(e => e.Embed = buildBoard("現在、メンバーがこれで良いか決定する投票中です。"));
             }
         }
 
@@ -88,8 +90,6 @@ namespace Resistance {
         /// リーダーがメンバーを決める。
         /// </summary>
         private async Task<List<Player>> selectMember(Player leader) {
-            await this.board.ModifyAsync(e => e.Embed = buildBoard("現在、" + leader.Name + "がメンバーを選んでいます。")); ;
-
             String playerList = "";
             for(var i = 0; i < players.Count; i++) {
                 playerList += (i + 1) + ":" + players[i].Name + "\n";
