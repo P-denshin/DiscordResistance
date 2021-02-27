@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace Resistance {
-    static class MessageReceiver {
-        static String receivedMessage = null;
+    class MessageReceiver {
+        String receivedMessage = null;
 
-        public static String ReceiveMessage(Player player) {
+        public String ReceiveMessage(Player player) {
             receivedMessage = null;
             player.OnGetMessage += receive;
 
@@ -21,7 +21,7 @@ namespace Resistance {
             return res;
         }
 
-        private static void receive(SocketMessage message) {
+        private void receive(SocketMessage message) {
             receivedMessage = message.Content;
         }
 

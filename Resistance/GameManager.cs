@@ -94,7 +94,7 @@ namespace Resistance {
             while (true) {
                 await leaderDM.SendMessageAsync("プレイヤーを" + missionNum.NumberRequiredForFailer + "人選択して下さい。\nプレイヤーはスペース区切りで番号を指定してください。\n\nプレイヤーリスト\n" + playerList);
 
-                string playersListStr = MessageReceiver.ReceiveMessage(leader);
+                string playersListStr = new MessageReceiver().ReceiveMessage(leader);
 
                 string[] numbers = playersListStr.Split(" ");
                 
@@ -132,7 +132,7 @@ namespace Resistance {
                 }
                 await leaderDM.SendMessageAsync(message);
 
-                var yorn = MessageReceiver.ReceiveMessage(leader);
+                var yorn = new MessageReceiver().ReceiveMessage(leader);
 
                 if (!yorn.Equals("y")) {
                     continue;
